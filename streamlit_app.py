@@ -127,6 +127,20 @@ with right_col:
                         options=range(len(api_candidates)),
                         format_func=lambda x: f"{api_candidates[x]['newPlatPlc']} - {api_candidates[x]['bldNm']} ({api_candidates[x]['dongNm']})"
                     )
+                    candidate_details = api_candidates[selected_index]
+                    print(candidate_details)
+                    st.json({
+                    "도로명 주소": candidate_details.get('newPlatPlc', '') or '',
+                    "건물명": candidate_details.get('bldNm', '') or '',
+                    "동명": candidate_details.get('dongNm', '') or '',
+                    "주용도": candidate_details.get('etcPurps', '') or '',
+                    "구조": candidate_details.get('strctCdNm', '') or '',
+                    "면적(㎡)": candidate_details.get('archArea', '') or '',
+                    "사용승인일": candidate_details.get('useAprDay', '') or '',
+                    "지상층 수": candidate_details.get('grndFlrCnt', 0) or '',
+                    "지하층 수": candidate_details.get('ugrndFlrCnt', 0) or '',
+                })
+                
                 else:
                     selected_index = st.radio(
                         "후보 선택",
@@ -135,19 +149,18 @@ with right_col:
                     )
 
 
-                candidate_details = api_candidates[selected_index]
-                print(candidate_details)
-                st.json({
-                "도로명 주소": candidate_details.get('newPlatPlc', '') or '',
-                "건물명": candidate_details.get('bldNm', '') or '',
-                "동명": candidate_details.get('dongNm', '') or '',
-                "주용도": candidate_details.get('etcPurps', '') or '',
-                "구조": candidate_details.get('strctCdNm', '') or '',
-                "면적(㎡)": candidate_details.get('archArea', '') or '',
-                "사용승인일": candidate_details.get('useAprDay', '') or '',
-                "지상층 수": candidate_details.get('grndFlrCnt', 0) or '',
-                "지하층 수": candidate_details.get('ugrndFlrCnt', 0) or '',
-            })
+                    candidate_details = api_candidates[selected_index]
+                    print(candidate_details)
+                    st.json({
+                    "도로명 주소": candidate_details.get('newPlatPlc', '') or '',
+                    "건물명": candidate_details.get('bldNm', '') or '',
+                    "동명": candidate_details.get('dongNm', '') or '',
+                    "호명": candidate_details.get('hoNm', '') or '',
+                    "주용도": candidate_details.get('etcPurps', '') or '',
+                    "구조": candidate_details.get('strctCdNm', '') or '',
+                    "면적(㎡)": candidate_details.get('area', '') or '',
+                    "사용승인일": candidate_details.get('useAprDay', '') or '',
+                })
 
 
                 # ✅ 전유건축물일 경우에만 페이지네이션 버튼 표시
