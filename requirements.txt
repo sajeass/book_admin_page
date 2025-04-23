@@ -1,2 +1,3 @@
 pymongo
 pymysql
+azure-storage-blob
