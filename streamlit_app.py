@@ -69,6 +69,10 @@ def fetch_mongo_data(i_code):
     query = {"i_code": i_code}
     return mongo_db.find_one("court_auction", 'progress_items', query)
 
+def fetch_dongnm_sql(i_code):
+    "SELECT dongnm FROM aboutb_pro4.i_request where i_code = %s"
+    return result
+
 # ✅ Lambda API 데이터 캐싱 (30초 동안 동일 요청 방지)
 @st.cache_data(ttl=60)
 def fetch_api_candidates(request_payload):
@@ -188,8 +192,8 @@ with right_col:
         if st.button("❌ PASS", use_container_width=True):
             db = Database(schema='aboutb_pro4')
             update_query = f"""
-                UPDATE i_request 
-                SET {'ilban_pk' if group_type == "일반건축물" else "junyu_pk"} = '0' 
+                UPDATE i_request
+                SET {'ilban_pk' if group_type == "일반건축물" else "junyu_pk"} = '0'
                 WHERE i_code = {st.session_state.selected_i_code}
             """
             db.insert(update_query)
@@ -213,16 +217,10 @@ with right_col:
                 # ✅ API 후보 리스트가 업데이트된 상태로 다시 UI 렌더링
                 st.subheader(f"📌 건축물대장 후보 ({len(st.session_state.api_candidates)}개)")
 
-
-
-
-
     # 🔹 선택된 후보 정보를 `expander`로 출력
     if candidate_details:
         with st.expander("📋 선택된 건축물 정보 보기", expanded=True):
             st.json(candidate_details)
-
-
 
 
 
