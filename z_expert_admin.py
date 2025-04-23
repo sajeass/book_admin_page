@@ -80,14 +80,14 @@ with right_col:
 
             expert_name = st.text_input("전문가 이름 *", expert_data["expert_name"], placeholder="예: 홍길동")
             phone_num = st.text_input("핸드폰 번호", expert_data["phone_num"], placeholder="예: 010-1234-5678")
-            coverage_region = st.text_input("대표 지역", expert_data["coverage_region"], placeholder="예: 서울, 경기 등")
-            coverage_use = st.text_input("대표 물건", expert_data["coverage_use"], placeholder="예: 아파트, 토지 등")
+            coverage_region = st.text_input("대표 지역", expert_data["coverage_region"], placeholder="예: 전국, 서울, 경기 등")
+            coverage_use = st.text_input("대표 물건", expert_data["coverage_use"], placeholder="예: 모든 물건, 아파트, 토지 등")
             rep_img_file = st.file_uploader("대표사진 업로드", type=["jpg", "jpeg", "png"], key="rep_img")
 
         with col2:
             keyword = st.text_input("키워드 (','로 구분)", expert_data["keyword"], placeholder="예: 경매,NPL,대출")
-            detail_info = st.text_area("상세 정보", expert_data["detail_info"], placeholder="경력, 전문분야, 주요 활동 이력 등")
-            coment = st.text_area("코멘트", expert_data["coment"], placeholder="내부 참고용 메모 등")
+            detail_info = st.text_area("상세 정보", expert_data["detail_info"], placeholder="키워드 포함 모든 정보 (상담가능시간,등록번호 등등)")
+            coment = st.text_area("소개 글", expert_data["coment"], placeholder="전문가 소개 글")
             card_img_file = st.file_uploader("명함사진 업로드", type=["jpg", "jpeg", "png"], key="card_img")
 
         submitted = st.form_submit_button("등록하기" if is_new else "수정하기")
