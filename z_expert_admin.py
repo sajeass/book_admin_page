@@ -3,6 +3,7 @@ import pandas as pd
 import uuid
 from src.common._database import Database
 from src.common._file_control import File_control
+# streamlit run z_expert_admin.py
 
 st.set_page_config(page_title="z_expert 전문가 관리", layout="wide")
 st.title("📇 전문가 관리 페이지")
@@ -14,7 +15,7 @@ if "db" not in st.session_state:
 COLUMNS = [
     "id", "group_name", "group_code", "expert_name", "phone_num",
     "coverage_region", "coverage_use", "keyword", "detail_info",
-    "coment", "img_url", "business_card_url", "insert_time", "uupdate_time"
+    "comment", "img_url", "business_card_url", "insert_time", "uupdate_time"
 ]
 
 @st.cache_data(ttl=60)
@@ -31,7 +32,7 @@ def insert_expert(data) -> int:
     query = """
         INSERT INTO z_expert
         (group_name, group_code, expert_name, phone_num, coverage_region, coverage_use,
-         keyword, detail_info, coment, img_url, business_card_url)
+         keyword, detail_info, comment, img_url, business_card_url)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     st.session_state.db.insert(query, data)
@@ -43,7 +44,7 @@ def update_expert(data, expert_id):
         UPDATE z_expert SET
         group_name=%s, group_code=%s, expert_name=%s, phone_num=%s,
         coverage_region=%s, coverage_use=%s, keyword=%s, detail_info=%s,
-        coment=%s, img_url=%s, business_card_url=%s,
+        comment=%s, img_url=%s, business_card_url=%s,
         uupdate_time=NOW()
         WHERE id = %s
     """
@@ -63,7 +64,7 @@ with left_col:
     expert_data = {
         "group_name": "", "group_code": "", "expert_name": "", "phone_num": "",
         "coverage_region": "", "coverage_use": "", "keyword": "", "detail_info": "",
-        "coment": "", "img_url": "", "business_card_url": ""
+        "comment": "", "img_url": "", "business_card_url": ""
     }
 
     if selected_id:
@@ -134,7 +135,7 @@ with right_col:
         with col2:
             keyword = st.text_input("키워드 (','로 구분)", expert_data["keyword"], placeholder="예: 경매,NPL,대출")
             detail_info = st.text_area("상세 정보", expert_data["detail_info"], placeholder="키워드 포함 모든 정보 (상담가능시간,등록번호 등등)")
-            coment = st.text_area("소개 글", expert_data["coment"], placeholder="전문가 소개 글")
+            comment = st.text_area("소개 글", expert_data["comment"], placeholder="전문가 소개 글")
             card_img_file = st.file_uploader("명함사진 업로드", type=["jpg", "jpeg", "png"], key="card_img")
 
         submitted = st.form_submit_button("등록하기" if is_new else "수정하기")
@@ -151,7 +152,7 @@ with right_col:
                 rep_file_name = f"{uuid.uuid4()}.{rep_ext}"
                 fc = File_control(
                     file_name=rep_file_name,
-                    container_name="expert-profile",
+                    container_name="expert-images",
                     contents=rep_img_file.getvalue(),
                     blob_path=f"profile/{rep_file_name}"
                 )
@@ -174,14 +175,14 @@ with right_col:
                 expert_id = insert_expert((
                     group_name, group_code, expert_name, phone_num,
                     coverage_region, coverage_use, keyword,
-                    detail_info, coment, rep_img_url, card_img_url
+                    detail_info, comment, rep_img_url, card_img_url
                 ))
             else:
                 expert_id = selected_id
                 update_expert((
                     group_name, group_code, expert_name, phone_num,
                     coverage_region, coverage_use, keyword,
-                    detail_info, coment, rep_img_url, card_img_url
+                    detail_info, comment, rep_img_url, card_img_url
                 ), expert_id)
 
             st.success("✅ 전문가 정보가 저장되었습니다.")
