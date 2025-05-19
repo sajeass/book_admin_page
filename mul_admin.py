@@ -4,15 +4,15 @@ from src.common._database import Database
 import src.convert.convert_jiwon as ConvertJiwon
 import src.convert.convert_etc as ConvertEtc
 
-crawler_lambda_url = "https://3bljfdmys2jwtyhdq3i74i32ne0yadtn.lambda-url.ap-northeast-2.on.aws/"
+crawler_lambda_url = "https://3bljfdmys2jwtyhdq3i74i32ne0yadtn.lambda-url.ap-northeast-2.on.aws/crawling_new_progress"
 
-st.set_page_config(page_title="누락된 물건 처리 관리자", layout="centered")
-st.title("🔧 누락된 물건 처리 페이지")
+st.set_page_config(page_title="간이 관리자", layout="centered")
+st.title("🔧 간이 관리자 페이지")
 
 if "db" not in st.session_state:
     st.session_state.db = Database(schema="aboutb_pro4")
 
-def collect_one(db, jiwon_name, c_num, mul_num, progress_type='1'):
+def collect_one(db, jiwon_name, c_num, mul_num, progress_type):
     jiwon_code = ConvertJiwon.convert_jiwon_code(jiwon_name, "jiwon_code")
     case_year = c_num[:4]
     case_num = c_num[6:]
@@ -20,7 +20,7 @@ def collect_one(db, jiwon_name, c_num, mul_num, progress_type='1'):
     mul_num = mul_num.zfill(3)
     m_code = c_code + mul_num
 
-    st.write(f"✅ 변환 결과: jiwon_code={jiwon_code}, c_code={c_code}, m_code={m_code}")
+    st.write(f"✅ 변환 결과: jiwon_code={jiwon_code}, c_code={c_code}, m_code={m_code}, progress_type={progress_type}")
 
     st.session_state.db.insert("INSERT IGNORE INTO c_basic (c_code) VALUES (%s)", (c_code,))
     st.session_state.db.insert(
@@ -37,6 +37,10 @@ with st.form("insert_form"):
     jiwon_name = st.text_input("법원명 (예: 안산지원)", "")
     c_num = st.text_input("사건번호 (예: 2023타경1213)", "")
     mul_num = st.text_input("물건번호 (예: 1)", "")
+
+    # ✅ 물건 구분 (기본: 진행물건)
+    mul_type = st.selectbox("물건 구분", ["진행물건", "예정물건"], index=0)
+
     submitted = st.form_submit_button("처리 시작")
 
     if submitted:
@@ -44,14 +48,23 @@ with st.form("insert_form"):
             st.error("❌ 모든 값을 입력해 주세요.")
         else:
             try:
-                c_code = collect_one(st.session_state.db, jiwon_name, c_num, mul_num)
+                # ✅ 구분에 따른 progress_type 및 request_type 결정
+                progress_type = "1" if mul_type == "진행물건" else "2"
+                lambda_request_type = "crawling_new_progress" if mul_type == "진행물건" else "crawling_new_planned"
+
+
+                c_code = collect_one(st.session_state.db, jiwon_name, c_num, mul_num, progress_type)
 
                 # ✅ 1차 성공 메시지
                 st.info("✅ 사건번호 DB 삽입 성공 / 크롤링 API 작업중 (10초 내외 소요)")
 
-                # ✅ Lambda 호출
-                response = requests.get(crawler_lambda_url, params={"request_type": "crawling_new_progress", "c_code": c_code})
+                # ✅ Lambda 호출 (GET 방식)
+                response = requests.get(
+                    crawler_lambda_url,
+                    params={"request_type": lambda_request_type, "c_code": c_code}
+                )
 
+                # ✅ 응답 처리
                 if response.status_code == 200:
                     try:
                         res_json = response.json()
