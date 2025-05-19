@@ -81,3 +81,13 @@ with st.form("insert_form"):
 
             except Exception as e:
                 st.exception(e)
+
+# ✅ 1차 성공 메시지
+st.info("✅ 사건번호 DB 삽입 성공 / 크롤링 API 작업중 (10초 내외 소요)")
+
+# ✅ 물건 확인 링크 버튼
+st.markdown(
+    f'<a href="https://madangs.com/caview?m_code={c_code + mul_num.zfill(3)}" target="_blank">'
+    f'<button style="padding:10px 20px;font-size:16px;">🔍 웹사이트에서 물건 확인하기</button></a>',
+    unsafe_allow_html=True
+)
