@@ -12,7 +12,7 @@ st.title("🔧 간이 관리자 페이지")
 if "db" not in st.session_state:
     st.session_state.db = Database(schema="aboutb_pro4")
 
-def collect_one(db, jiwon_name, c_num, mul_num, progress_type):
+def collect_one(db, jiwon_name, c_num, mul_num):
     jiwon_code = ConvertJiwon.convert_jiwon_code(jiwon_name, "jiwon_code")
     case_year = c_num[:4]
     case_num = c_num[6:]
@@ -20,15 +20,9 @@ def collect_one(db, jiwon_name, c_num, mul_num, progress_type):
     mul_num = mul_num.zfill(3)
     m_code = c_code + mul_num
 
-    st.write(f"✅ 변환 결과: jiwon_code={jiwon_code}, c_code={c_code}, m_code={m_code}, progress_type={progress_type}")
+    st.write(f"✅ 변환 결과: jiwon_code={jiwon_code}, c_code={c_code}, m_code={m_code}")
 
     st.session_state.db.insert("INSERT IGNORE INTO c_basic (c_code) VALUES (%s)", (c_code,))
-    st.session_state.db.insert(
-        """INSERT IGNORE INTO m_basic (jiwon_code, case_year, case_num, mul_num, m_code, c_code, progress_type)
-           VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-        (jiwon_code, case_year, case_num, mul_num, m_code, c_code, progress_type)
-    )
-    st.session_state.db.insert("INSERT IGNORE INTO m_addr (m_code, c_code) VALUES (%s, %s)", (m_code, c_code))
 
     return c_code
 
@@ -38,8 +32,6 @@ with st.form("insert_form"):
     c_num = st.text_input("사건번호 (예: 2023타경1213)", "")
     mul_num = st.text_input("물건번호 (예: 1)", "")
 
-    # ✅ 물건 구분 (기본: 진행물건)
-    mul_type = st.selectbox("물건 구분", ["진행물건", "예정물건"], index=0)
 
     submitted = st.form_submit_button("처리 시작")
 
@@ -49,11 +41,10 @@ with st.form("insert_form"):
         else:
             try:
                 # ✅ 구분에 따른 progress_type 및 request_type 결정
-                progress_type = "1" if mul_type == "진행물건" else "2"
-                lambda_request_type = "crawling_new_progress" if mul_type == "진행물건" else "crawling_new_planned"
+                lambda_request_type = "crawler"
+                update_type = "new"
 
-
-                c_code = collect_one(st.session_state.db, jiwon_name, c_num, mul_num, progress_type)
+                c_code = collect_one(st.session_state.db, jiwon_name, c_num, mul_num)
 
                 # ✅ 1차 성공 메시지
                 st.info("✅ 사건번호 DB 삽입 성공 / 크롤링 API 작업중 (10초 내외 소요)")
@@ -61,7 +52,7 @@ with st.form("insert_form"):
                 # ✅ Lambda 호출 (GET 방식)
                 response = requests.get(
                     crawler_lambda_url,
-                    params={"request_type": lambda_request_type, "c_code": c_code}
+                    params={"request_type": lambda_request_type,"update_type":update_type, "c_code": c_code}
                 )
 
                 # ✅ 응답 처리
@@ -86,8 +77,8 @@ with st.form("insert_form"):
 st.info("✅ 사건번호 DB 삽입 성공 / 크롤링 API 작업중 (10초 내외 소요)")
 
 # ✅ 물건 확인 링크 버튼
-st.markdown(
-    f'<a href="https://madangs.com/caview?m_code={c_code + mul_num.zfill(3)}" target="_blank">'
-    f'<button style="padding:10px 20px;font-size:16px;">🔍 웹사이트에서 물건 확인하기</button></a>',
-    unsafe_allow_html=True
-)
+# st.markdown(
+#     f'<a href="https://madangs.com/caview?m_code={c_code + mul_num.zfill(3)}" target="_blank">'
+#     f'<button style="padding:10px 20px;font-size:16px;">🔍 웹사이트에서 물건 확인하기</button></a>',
+#     unsafe_allow_html=True
+# )
